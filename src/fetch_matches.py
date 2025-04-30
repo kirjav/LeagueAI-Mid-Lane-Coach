@@ -103,7 +103,8 @@ def main():
             time.sleep(1.2)  # Be gentle with Riot API
 
     # Save to CSV
-    with open('midlane_matches.csv', 'w', newline='') as csvfile:
+    output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'midlane_matches.csv')
+    with open(output_path, 'w', newline='') as csvfile:
         fieldnames = ['summoner', 'match_id', 'champion', 'win', 'kills', 'deaths', 'assists', 'cs', 'duration', 'timestamp']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
