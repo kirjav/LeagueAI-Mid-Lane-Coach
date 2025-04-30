@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+venv/
+pip-wheel-metadata/
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Replay files and raw data
+*.rofl
+replays/
+data/*.csv
+data/*.json
+
+# Model files / Checkpoints
+*.h5
+*.ckpt
+*.pt
+*.pth
+*.joblib
+*.pickle
+
+# Streamlit and web caches
+.streamlit/
+.cache/
+node_modules/
+
+# VSCode
+.vscode/
