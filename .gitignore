@@ -1,46 +1,51 @@
-# Python
+# =========================
+# Python & VS Code
+# =========================
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-*.egg
-*.egg-info/
-dist/
-build/
+*.so
+.Python
 .env
-.venv/
+.env.*
+
+# VS Code project settings
+.vscode/
+
+# =========================
+# Virtual Environments
+# =========================
 venv/
-pip-wheel-metadata/
-*.log
+env/
+.venv/
+.python-version
 
-# Jupyter
-.ipynb_checkpoints/
+# =========================
+# Data & Replays
+# =========================
 
-# OS files
+# Timeline JSONs (auto-downloaded)
+data/timelines/*.json
+
+# Replay files (raw .rofl files)
+replays/*.rofl
+
+# Final output datasets (optional to ignore if versioned)
+data/*.csv
+
+# =========================
+# OS & Editor Trash
+# =========================
 .DS_Store
 Thumbs.db
 
-# Replay files and raw data
-*.rofl
-replays/
-data/*.csv
-data/*.json
+# =========================
+# Git Utilities
+# =========================
+*.swp
+*.swo
+*.bak
 
-# Model files / Checkpoints
-*.h5
-*.ckpt
-*.pt
-*.pth
-*.joblib
-*.pickle
-
-# Streamlit and web caches
-.streamlit/
-.cache/
-node_modules/
-
-# VSCode
-.vscode/
-
-#Secret config
-.env
+# Keep folders tracked even if empty
+!.gitkeep
