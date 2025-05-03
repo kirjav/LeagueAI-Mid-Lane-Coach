@@ -2,11 +2,14 @@ import requests
 import time
 import csv
 import os
+from dotenv import load_dotenv
 
-API_KEY = 'RGAPI-adfac0de-56ad-4423-a851-5dd97bd37e00'  # Replace with your dev API key
+load_dotenv()
+API_KEY = os.getenv("RIOT_API_KEY")
+HEADERS = {"X-Riot-Token": API_KEY}
 REGION = 'na1'
 ROUTING = 'americas'
-HEADERS = {'X-Riot-Token': API_KEY}
+
 
 
 def get_puuid_by_riot_id(game_name, tag_line):
