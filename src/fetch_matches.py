@@ -40,37 +40,54 @@ def get_match_info(match_id, riot_id_full):
     info = data['info']
     participants = info['participants']
 
-    # Extract gameName and tagLine from riot_id_full (e.g., "meyst#0000")
     if "#" not in riot_id_full:
         print(f"Invalid Riot ID format passed: {riot_id_full}")
         return None
 
     game_name, tag_line = riot_id_full.split("#")
 
+    your_player = None
     for p in participants:
-        # Match by Riot ID (not legacy summoner name)
         if (
             p.get('riotIdGameName', '').lower() == game_name.lower()
             and p.get('riotIdTagline', '').lower() == tag_line.lower()
         ):
-            # Optional: filter only mid lane games
-            if p['lane'] != 'MIDDLE':
-                return None
+            your_player = p
+            break
 
-            return {
-                'match_id': match_id,
-                'champion': p['championName'],
-                'win': p['win'],
-                'kills': p['kills'],
-                'deaths': p['deaths'],
-                'assists': p['assists'],
-                'cs': p['totalMinionsKilled'] + p['neutralMinionsKilled'],
-                'duration': info['gameDuration'],
-                'timestamp': info['gameStartTimestamp']
-            }
+    if not your_player:
+        print(f"Summoner {riot_id_full} not found in match {match_id}")
+        return None
 
-    print(f"Summoner {riot_id_full} not found in match {match_id}")
-    return None
+    if your_player.get('teamPosition') != 'MIDDLE':
+        return None
+
+    your_team_id = your_player['teamId']
+
+    enemy_mid = next(
+        (p for p in participants if p['teamPosition'] == 'MIDDLE' and p['teamId'] != your_team_id),
+        None
+    )
+
+    return {
+        'match_id': match_id,
+        'champion': your_player['championName'],
+        'win': your_player['win'],
+        'kills': your_player['kills'],
+        'deaths': your_player['deaths'],
+        'assists': your_player['assists'],
+        'cs': your_player['totalMinionsKilled'] + your_player['neutralMinionsKilled'],
+        'duration': info['gameDuration'],
+        'timestamp': info['gameStartTimestamp'],
+        'opp_champion': enemy_mid['championName'] if enemy_mid else None,
+        'opp_kills': enemy_mid['kills'] if enemy_mid else None,
+        'opp_deaths': enemy_mid['deaths'] if enemy_mid else None,
+        'opp_cs': (
+            enemy_mid['totalMinionsKilled'] + enemy_mid['neutralMinionsKilled']
+            if enemy_mid else None
+        )
+    }
+
 
 
 def main():
@@ -108,7 +125,12 @@ def main():
     # Save to CSV
     output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'midlane_matches.csv')
     with open(output_path, 'w', newline='') as csvfile:
-        fieldnames = ['summoner', 'match_id', 'champion', 'win', 'kills', 'deaths', 'assists', 'cs', 'duration', 'timestamp']
+        fieldnames = [
+    'summoner', 'match_id', 'champion', 'win',
+    'kills', 'deaths', 'assists', 'cs', 'duration', 'timestamp',
+    'opp_champion', 'opp_kills', 'opp_deaths', 'opp_cs'
+]
+
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for row in results:
