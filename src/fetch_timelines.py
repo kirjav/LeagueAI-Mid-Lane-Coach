@@ -24,7 +24,7 @@ def main():
     output_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'timelines')
     os.makedirs(output_dir, exist_ok=True)
 
-    with open(matches_path, newline='') as csvfile:
+    with open(matches_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
 
         for row in reader:
@@ -41,7 +41,7 @@ def main():
             print(f"🔎 Fetching: {output_filename}")
             timeline = get_timeline(match_id)
             if timeline:
-                with open(output_path, 'w') as f:
+                with open(output_path, 'w', newline='', encoding='utf-8') as f:
                     json.dump(timeline, f, indent=2)
                 print(f"✅ Saved: {output_filename}")
 

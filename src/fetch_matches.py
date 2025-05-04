@@ -45,48 +45,53 @@ def get_match_info(match_id, riot_id_full):
         return None
 
     game_name, tag_line = riot_id_full.split("#")
+    this_player = None
+    opponent_mid = None
 
-    your_player = None
+    # Identify your player and the opposing mid
     for p in participants:
         if (
-            p.get('riotIdGameName', '').lower() == game_name.lower()
-            and p.get('riotIdTagline', '').lower() == tag_line.lower()
+            p.get('riotIdGameName', '').lower() == game_name.lower() and
+            p.get('riotIdTagline', '').lower() == tag_line.lower()
         ):
-            your_player = p
+            if p['lane'] != 'MIDDLE':
+                return None  # skip non-mid games
+            this_player = p
             break
 
-    if not your_player:
+    if not this_player:
         print(f"Summoner {riot_id_full} not found in match {match_id}")
         return None
 
-    if your_player.get('teamPosition') != 'MIDDLE':
-        return None
+    # Find the opposing mid laner
+    for p in participants:
+        if (
+            p['lane'] == 'MIDDLE' and
+            p['teamId'] != this_player['teamId']
+        ):
+            opponent_mid = p
+            break
 
-    your_team_id = your_player['teamId']
-
-    enemy_mid = next(
-        (p for p in participants if p['teamPosition'] == 'MIDDLE' and p['teamId'] != your_team_id),
-        None
-    )
+    opp_riot_id = f"{opponent_mid.get('riotIdGameName')}#{opponent_mid.get('riotIdTagline')}" if opponent_mid else None
 
     return {
         'match_id': match_id,
-        'champion': your_player['championName'],
-        'win': your_player['win'],
-        'kills': your_player['kills'],
-        'deaths': your_player['deaths'],
-        'assists': your_player['assists'],
-        'cs': your_player['totalMinionsKilled'] + your_player['neutralMinionsKilled'],
-        'opp_champion': enemy_mid['championName'] if enemy_mid else None,
-        'opp_kills': enemy_mid['kills'] if enemy_mid else None,
-        'opp_deaths': enemy_mid['deaths'] if enemy_mid else None,
-        'opp_cs': (
-            enemy_mid['totalMinionsKilled'] + enemy_mid['neutralMinionsKilled']
-            if enemy_mid else None
-        )
+        'champion': this_player['championName'],
+        'participant_id': this_player['participantId'],
+        'opp_participant_id': opponent_mid['participantId'] if opponent_mid else None,
+        'win': this_player['win'],
+        'kills': this_player['kills'],
+        'deaths': this_player['deaths'],
+        'assists': this_player['assists'],
+        'cs': this_player['totalMinionsKilled'] + this_player['neutralMinionsKilled'],
+        'duration': info['gameDuration'],
+        'opp_kills': opponent_mid['kills'] if opponent_mid else 0,
+        'opp_deaths': opponent_mid['deaths'] if opponent_mid else 1,
+        'opp_assists': opponent_mid['assists'] if opponent_mid else 0,
+        'opp_cs': opponent_mid['totalMinionsKilled'] + opponent_mid['neutralMinionsKilled'] if opponent_mid else 0,
+        'opp_champion': opponent_mid['championName'] if opponent_mid else '',
+        'opp_summoner': opp_riot_id
     }
-
-
 
 def main():
     base_dir = os.path.dirname(__file__)
@@ -122,12 +127,12 @@ def main():
 
     # Save to CSV
     output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'midlane_matches.csv')
-    with open(output_path, 'w', newline='') as csvfile:
+    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
-    'summoner', 'match_id', 'champion', 'win',
-    'kills', 'deaths', 'assists', 'cs', 'duration', 'timestamp',
-    'opp_champion', 'opp_kills', 'opp_deaths', 'opp_cs'
-]
+    'summoner', 'match_id', 'champion', 'participant_id', 'opp_participant_id', 'win',
+    'kills', 'deaths', 'assists', 'cs', 'duration', 'opp_kills', 'opp_deaths', 'opp_assists', 'opp_cs', 'opp_champion', 'opp_summoner']
+
+
 
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
