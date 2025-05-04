@@ -77,8 +77,6 @@ def get_match_info(match_id, riot_id_full):
         'deaths': your_player['deaths'],
         'assists': your_player['assists'],
         'cs': your_player['totalMinionsKilled'] + your_player['neutralMinionsKilled'],
-        'duration': info['gameDuration'],
-        'timestamp': info['gameStartTimestamp'],
         'opp_champion': enemy_mid['championName'] if enemy_mid else None,
         'opp_kills': enemy_mid['kills'] if enemy_mid else None,
         'opp_deaths': enemy_mid['deaths'] if enemy_mid else None,
