@@ -41,8 +41,7 @@ def main():
         merged_rows.append(combined)
 
     if merged_rows:
-        # 🧹 Remove any row with missing or invalid participant ID
-            # 🧹 Remove rows where opponent's participant ID is missing or invalid
+        # 🧹 Remove rows where opponent's participant ID is missing or invalid
         merged_rows = [
         row for row in merged_rows
         if row.get('opp_participant_id') not in [None, '', '-1']]
