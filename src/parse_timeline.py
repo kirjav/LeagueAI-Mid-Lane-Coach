@@ -69,11 +69,9 @@ def extract_features(timeline_json, match_id, summoner):
         # Kills & Deaths
         if event['type'] == 'CHAMPION_KILL':
             if event.get('victimId') == participant_id:
-                
                 if not features['first_death_time']:
                     features['first_death_time'] = t
             if event.get('killerId') == participant_id:
-                
                 if not features['first_kill_or_assist_time']:
                     features['first_kill_or_assist_time'] = t
                 if not features['first_teamfight_join_time'] and len(event.get('assistingParticipantIds', [])) >= 2:

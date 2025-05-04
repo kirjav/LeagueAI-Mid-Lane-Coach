@@ -98,7 +98,7 @@ def main():
 
     for riot_id in summoners:
         if "#" not in riot_id:
-            print(f"Invalid Riot ID format: {riot_id} — should be like 'Faker#KR'")
+            print(f"Invalid Riot ID format: {riot_id}")
             continue
 
         game_name, tag_line = [part.strip() for part in riot_id.split("#")]
