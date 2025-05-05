@@ -27,6 +27,14 @@ A League of Legends mid-lane analysis tool powered by match data and machine lea
 
 ---
 
+### Sample Output Row
+
+| match_id        | summoner       | champion | cs_at_10min | gold_diff_at_10 | early_roam | has_early_lane_prio | kda | opp_champion | win  |
+|----------------|----------------|----------|-------------|------------------|------------|----------------------|-----|---------------|------|
+| NA1_5280028785 | struggler#heed | Syndra   | 76          | 20               | FALSE      | FALSE                | 4.25| Yone          | FALSE |
+
+---
+
 ## 📌 Future Plans
 
 - SHAP or attention-based model explanations  
