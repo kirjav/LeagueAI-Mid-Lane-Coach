@@ -20,8 +20,8 @@ def get_timeline(match_id):
 
 def main():
     # CSV source
-    matches_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'midlane_matches.csv')
-    output_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'timelines')
+    matches_path = os.path.join(os.path.dirname(__file__), '..','..', 'data', 'midlane_matches.csv')
+    output_dir = os.path.join(os.path.dirname(__file__), '..','..', 'data', 'timelines')
     os.makedirs(output_dir, exist_ok=True)
 
     with open(matches_path, newline='', encoding='utf-8') as csvfile:

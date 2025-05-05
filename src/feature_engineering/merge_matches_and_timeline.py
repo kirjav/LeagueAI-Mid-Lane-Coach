@@ -16,9 +16,9 @@ def calculate_kda(kills, assists, deaths):
 
 def main():
     base_dir = os.path.dirname(__file__)
-    match_path = os.path.join(base_dir, '..', 'data', 'midlane_matches.csv')
-    timeline_path = os.path.join(base_dir, '..', 'data', 'parsed_timeline_features.csv')
-    output_path = os.path.join(base_dir, '..', 'data', 'merged_data.csv')
+    match_path = os.path.join(base_dir, '..', '..', 'data', 'midlane_matches.csv')
+    timeline_path = os.path.join(base_dir, '..', '..', 'data', 'parsed_timeline_features.csv')
+    output_path = os.path.join(base_dir, '..', '..', 'data', 'merged_data.csv')
 
     matches = read_csv(match_path)
     timelines = read_csv(timeline_path)
@@ -37,7 +37,11 @@ def main():
             print(f"⚠️ Timeline data not found for match {match_id}")
             continue
 
-        combined = {**match, **timeline}
+        combined = {
+    key: timeline.get(key) if timeline.get(key) not in [None, '', 'None'] else match.get(key)
+    for key in set(match) | set(timeline)
+}
+
         merged_rows.append(combined)
 
     if merged_rows:

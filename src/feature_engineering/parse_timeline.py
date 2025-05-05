@@ -146,9 +146,9 @@ def extract_features(timeline_json, match_id, summoner, participant_id, opp_part
 
 
 def main():
-    input_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'timelines')
-    match_info_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'midlane_matches.csv')
-    output_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'parsed_timeline_features.csv')
+    input_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'timelines')
+    match_info_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'midlane_matches.csv')
+    output_file = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'parsed_timeline_features.csv')
 
     with open(match_info_path, newline='', encoding='utf-8') as f:
         match_info_list = list(csv.DictReader(f))

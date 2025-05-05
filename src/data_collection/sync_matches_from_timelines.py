@@ -108,8 +108,8 @@ def get_match_info(match_id, riot_id_full, max_retries=3):
 
 def main():
     base_dir = os.path.dirname(__file__)
-    match_path = os.path.join(base_dir, '..', 'data', 'midlane_matches.csv')
-    timeline_dir = os.path.join(base_dir, '..', 'data', 'timelines')
+    match_path = os.path.join(base_dir, '..','..', 'data', 'midlane_matches.csv')
+    timeline_dir = os.path.join(base_dir, '..','..', 'data', 'timelines')
 
     matches = load_existing_matches(match_path)
     new_rows = []
