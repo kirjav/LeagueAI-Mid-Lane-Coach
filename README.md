@@ -1,41 +1,35 @@
-# LeagueAI-Mid-Lane-Coach
+# 🧠 LeagueAI Mid Lane Coach
 
-**An AI-powered coaching tool for League of Legends mid laners**, built to analyze Challenger-level replays and provide early-game decision feedback on roam and ward timing.
-
-## 🎯 Project Goal
-
-This MVP focuses on identifying and analyzing **key mid lane behaviors** — especially **roaming**, **vision control**, and **early deaths** — using parsed `.rofl` files from high-elo ranked matches. The goal is to emulate high-level decision-making and give actionable feedback for improvement.
+A League of Legends mid-lane analysis tool powered by match data and machine learning. This project builds a full data pipeline to evaluate midlane performance, identify areas of improvement, and ultimately help players win more games.
 
 ---
 
-## 💡 Key Features
+## 🚀 Key Features
 
-- 🗺️ Extracts mid lane roam and ward timings from `.rofl` replay files
-- 🧠 Compares decision timing against Challenger-level baselines
-- 📊 Outputs structured features (e.g., `first_roam_time`, `ward_before_roam`, `cs_at_10min`)
-- 🔍 Detects unsafe roams and missing vision before ganks
-- ⚙️ Powered by Riot API, Python, and custom parsing logic
-
----
-
-## 📁 Sample Output
-
-| match_id     | summoner | first_ward_time | first_roam_time | ward_before_roam | roam_success | deaths_before_10min | cs_at_10min |
-|--------------|----------|-----------------|------------------|------------------|--------------|---------------------|-------------|
-| NA1_12345678 | Faker    | 03:10           | 05:32            | True             | True         | 0                   | 86          |
+- 🔎 Fetch ranked solo midlane match & timeline data via Riot API  
+- 🧠 Extract lane-phase events like CS, roams, deaths, item timing, and more  
+- 🔗 Merge and clean match/timeline data for analysis  
+- 🧬 One-hot encode champion roles for modeling  
+- 📊 Train ML models to predict win outcomes and highlight improvement areas  
+- 🧠 Analyze your own matches to get tailored feedback
 
 ---
 
-## 🔧 Tech Stack
+## 🛠️ Technology
 
-- 🐍 **Python** — core data pipeline and replay parsing
-- 📦 **requests** — Riot API integration
-- 📊 **pandas**, **scikit-learn** — feature processing and basic modeling
-- 💾 **CSV/JSON** — lightweight data storage
-- 🖥️ **Streamlit** — for building a minimal UI
+- **Python** — Core programming language  
+- **Pandas** — Data cleaning and manipulation  
+- **scikit-learn** — ML training and encoding  
+- **Joblib** — Save models and encoders  
+- **Requests** — API interaction with Riot Games  
+- **Riot API** — Match and timeline data  
+- **Champion role mapping** — Custom one-hot encoding for champ roles  
 
 ---
 
-## 📌 Status
-In progress!
+## 📌 Future Plans
 
+- SHAP or attention-based model explanations  
+- Personalized improvement reports  
+- Web dashboard or Discord bot integration  
+- Expand features to include wave state, vision score, aggression index, etc.
