@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 def main():
     base_dir = os.path.dirname(__file__)
-    input_path = os.path.join(base_dir, '..', '..', 'data', 'cleaned_data.csv')
+    input_path = os.path.join(base_dir, '..', '..', 'data', 'labeled_data.csv')
     model_path = os.path.join(base_dir, '..', '..', 'models', 'lane_score_model.pkl')
 
     # Load data
