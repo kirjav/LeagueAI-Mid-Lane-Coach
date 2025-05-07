@@ -3,6 +3,8 @@ import csv
 import time
 import requests
 from dotenv import load_dotenv
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 load_dotenv()
 API_KEY = os.getenv("RIOT_API_KEY")

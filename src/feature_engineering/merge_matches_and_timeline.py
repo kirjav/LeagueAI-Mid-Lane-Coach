@@ -11,9 +11,6 @@ def write_csv(path, fieldnames, rows):
         writer.writeheader()
         writer.writerows(rows)
 
-def calculate_kda(kills, assists, deaths):
-    return round((int(kills) + int(assists)) / max(1, int(deaths)), 2)
-
 def main():
     base_dir = os.path.dirname(__file__)
     match_path = os.path.join(base_dir, '..', '..', 'data', 'midlane_matches.csv')

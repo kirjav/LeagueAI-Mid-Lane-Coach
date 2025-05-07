@@ -1,15 +1,12 @@
 import os
 import json
 import csv
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-def normalize_summoner(s):
-    s = s.replace('_', ' ')
-    return s.replace('-', '#') if '#' not in s and '-' in s else s
+from utils.riot_helpers import normalize_summoner
+from utils.feature_extract_helper import is_boots, calculate_kda
 
-def is_boots(item_id):
-    return item_id in {
-        1001, 3006, 3009, 3020, 3047, 3111, 3117, 3158
-    }
 
 def extract_features(timeline_json, match_id, summoner, participant_id, opp_participant_id=None):
     info = timeline_json['info']
@@ -117,8 +114,8 @@ def extract_features(timeline_json, match_id, summoner, participant_id, opp_part
                 features['boots_purchase_time'] = t
 
     # Final derived metrics
-    features['kda'] = round((kills + assists) / max(1, deaths), 2)
-    features['opp_kda'] = round((opp_kills + opp_assists) / max(1, opp_deaths), 2)
+    features['kda'] = calculate_kda(kills, assists, deaths)
+    features['opp_kda'] = calculate_kda(opp_kills, opp_assists, opp_deaths)
 
     if features['cs_at_10min'] is not None and features['opp_cs_at_10min'] is not None:
         features['cs_diff_at_10'] = features['cs_at_10min'] - features['opp_cs_at_10min']

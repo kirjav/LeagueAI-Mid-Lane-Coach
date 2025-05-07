@@ -1,22 +1,15 @@
 import os
 import csv
-import requests
 import json
 import time
 from dotenv import load_dotenv
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils.riot_helpers import get_timeline_data
 
 load_dotenv()
 API_KEY = os.getenv("RIOT_API_KEY")
 HEADERS = {"X-Riot-Token": API_KEY}
-
-def get_timeline(match_id):
-    url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline"
-    response = requests.get(url, headers=HEADERS)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"❌ Failed: {match_id} — Status code {response.status_code}")
-        return None
 
 def main():
     # CSV source
@@ -39,7 +32,7 @@ def main():
                 continue
 
             print(f"🔎 Fetching: {output_filename}")
-            timeline = get_timeline(match_id)
+            timeline = get_timeline_data(match_id)
             if timeline:
                 with open(output_path, 'w', newline='', encoding='utf-8') as f:
                     json.dump(timeline, f, indent=2)

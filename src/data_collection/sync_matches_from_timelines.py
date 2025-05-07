@@ -1,18 +1,17 @@
 import os
 import csv
-import json
 import time
 import requests
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils.riot_helpers import normalize_summoner
+
 from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.getenv("RIOT_API_KEY")
 HEADERS = {"X-Riot-Token": API_KEY}
 MATCH_URL = "https://americas.api.riotgames.com/lol/match/v5/matches/{}"
-
-def normalize_summoner(s):
-    s = s.replace('_', ' ')
-    return s.replace('-', '#') if '#' not in s and '-' in s else s
 
 def safe_request(url, headers=None, retries=3, timeout=10):
     for attempt in range(retries):

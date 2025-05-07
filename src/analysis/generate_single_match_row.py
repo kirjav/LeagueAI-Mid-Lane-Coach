@@ -1,56 +1,20 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import requests
-import json
-import time
 import pandas as pd
 from dotenv import load_dotenv
 from sklearn.preprocessing import OneHotEncoder
 import joblib
 
-# ✅ Replace with actual path if run independently
 from feature_engineering.champion_role_map import champion_role_map
+from utils.riot_helpers import get_match_data, get_timeline_data, extract_participants
+from utils.feature_extract_helper import is_boots, calculate_kda
+
 
 load_dotenv()
 API_KEY = os.getenv("RIOT_API_KEY")
 HEADERS = {"X-Riot-Token": API_KEY}
 ROUTING = 'americas'
-
-def is_boots(item_id):
-    return item_id in {
-        1001, 3006, 3009, 3020, 3047, 3111, 3117, 3158
-    }
-    
-def normalize_summoner(s):
-    s = s.replace('_', ' ')
-    return s.replace('-', '#') if '#' not in s and '-' in s else s
-
-def get_match_data(match_id):
-    url = f"https://{ROUTING}.api.riotgames.com/lol/match/v5/matches/{match_id}"
-    res = requests.get(url, headers=HEADERS)
-    return res.json() if res.status_code == 200 else None
-
-def get_timeline_data(match_id):
-    url = f"https://{ROUTING}.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline"
-    res = requests.get(url, headers=HEADERS)
-    return res.json() if res.status_code == 200 else None
-
-def extract_participants(info, riot_id):
-    game_name, tag_line = riot_id.split("#")
-    for p in info['participants']:
-        if (p.get('riotIdGameName', '').lower() == game_name.lower() and
-            p.get('riotIdTagline', '').lower() == tag_line.lower() and
-            p.get('lane') == 'MIDDLE'):
-            this_player = p
-            break
-    else:
-        return None, None
-
-    for p in info['participants']:
-        if p.get('lane') == 'MIDDLE' and p['teamId'] != this_player['teamId']:
-            return this_player, p
-    return this_player, None
 
 def extract_features(features, timeline_json, match_id, summoner, participant_id, opp_participant_id=None):
     info = timeline_json['info']
@@ -130,8 +94,8 @@ def extract_features(features, timeline_json, match_id, summoner, participant_id
                 features['boots_purchase_time'] = t
 
     # Final derived metrics
-    features['kda'] = round((kills + assists) / max(1, deaths), 2)
-    features['opp_kda'] = round((opp_kills + opp_assists) / max(1, opp_deaths), 2)
+    features['kda'] = calculate_kda(kills, assists, deaths)
+    features['opp_kda'] = calculate_kda(opp_kills, opp_assists, opp_deaths)
 
     if features['cs_at_10min'] is not None and features['opp_cs_at_10min'] is not None:
         features['cs_diff_at_10'] = features['cs_at_10min'] - features['opp_cs_at_10min']
@@ -254,4 +218,4 @@ def main(match_number, server, summoner):
     print(f"✅ Saved single match row to {output_path}")
 
 if __name__ == '__main__':
-    main("5282353", "NA1", "Wallaby#Rito")
+    main("5282357783", "NA1", "Wallaby#Rito")
