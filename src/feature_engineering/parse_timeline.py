@@ -35,7 +35,11 @@ def extract_features(timeline_json, match_id, summoner, participant_id, opp_part
         'kda': None,
         'opp_kda': None,
         'cs_diff_at_10': None,
+        'gold_diff_at_5': None,
         'gold_diff_at_10': None,
+        'gold_diff_at_15': None,
+        'gold_diff_trend_5_to_10': None,
+        'gold_diff_trend_10_to_15': None,
         'early_roam': False,
         'has_early_lane_prio': False
     }
@@ -120,13 +124,29 @@ def extract_features(timeline_json, match_id, summoner, participant_id, opp_part
         features['cs_diff_at_10'] = features['cs_at_10min'] - features['opp_cs_at_10min']
 
     # Gold diff at 10 min
-    if frames:
-        gold_frame = next((f for f in frames if f['timestamp'] >= 600000), None)
-        if gold_frame:
-            pf = gold_frame.get('participantFrames', {}).get(str(participant_id))
-            opp_pf = gold_frame.get('participantFrames', {}).get(str(opp_participant_id)) if opp_participant_id else None
-            if pf and opp_pf:
-                features['gold_diff_at_10'] = pf.get('totalGold', 0) - opp_pf.get('totalGold', 0)
+    for frame in frames:
+        ts = frame['timestamp']
+        pf = frame.get('participantFrames', {}).get(str(participant_id))
+        opp_pf = frame.get('participantFrames', {}).get(str(opp_participant_id))
+
+        if pf and opp_pf:
+            p_gold = pf.get('totalGold', 0)
+            opp_gold = opp_pf.get('totalGold', 0)
+            diff = p_gold - opp_gold
+
+            if ts >= 300000 and features.get('gold_diff_at_5') is None:
+                features['gold_diff_at_5'] = diff
+            if ts >= 600000 and features.get('gold_diff_at_10') is None:
+                features['gold_diff_at_10'] = diff
+            if ts >= 900000 and features.get('gold_diff_at_15') is None:
+                features['gold_diff_at_15'] = diff
+
+    if features['gold_diff_at_5'] is not None and features['gold_diff_at_10'] is not None:
+        features['gold_diff_trend_5_to_10'] = features['gold_diff_at_10'] - features['gold_diff_at_5']
+
+    if features['gold_diff_at_10'] is not None and features['gold_diff_at_15'] is not None:
+        features['gold_diff_trend_10_to_15'] = features['gold_diff_at_15'] - features['gold_diff_at_10']
+
 
     # Early roam
     if features['first_teamfight_join_time'] and features['first_teamfight_join_time'] <= 600:
