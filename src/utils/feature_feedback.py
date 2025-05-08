@@ -27,6 +27,6 @@ def suggest_target_value(model, feature_name, current_value, target_score=80, va
     best_idx = np.argmin(np.abs(preds - target_score))
     best_value = test_values[best_idx]
 
-    if preds[best_idx] > model.predict([[current_value]])[0] and not np.isclose(best_value, current_value):
+    if preds[best_idx] > model.predict(pd.DataFrame([{feature_name: current_value}])[model.feature_names_in_])[0] and not np.isclose(best_value, current_value):
         return best_value
     return None

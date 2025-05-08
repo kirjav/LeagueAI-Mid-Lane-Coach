@@ -1,7 +1,6 @@
 import pandas as pd
 import joblib
 import os
-import shap
 import matplotlib.pyplot as plt
 import json
 import sys
@@ -30,20 +29,6 @@ def format_input_to_match_model(df, expected_features):
             df[col] = 0
     df = df[expected_features]
     return df
-
-def explain_lane_score_with_shap(model, df):
-    df = df.astype('float64')  # ✅ Ensure all values are float
-    background = df.sample(n=min(100, len(df)), random_state=0)
-    explainer = shap.Explainer(model, background)
-    shap_values = explainer(df)
-
-    shap.summary_plot(shap_values, df, show=False)
-    plt.savefig('src/analysis/shap_summary_plot.png')
-
-    shap.plots.bar(shap_values, show=False)
-    plt.savefig('src/analysis/shap_bar_plot.png')
-
-    print("✅ SHAP visualizations saved.")
 
 def load_feature_types():
     path = os.path.join("models", "feature_types.json")
@@ -112,8 +97,6 @@ def main():
     df = pd.read_csv(data_path)
     model, expected_features = load_model_and_features(model_path)
     formatted_df = format_input_to_match_model(df.copy(), expected_features)
-
-    explain_lane_score_with_shap(model, formatted_df)
     prediction = model.predict(formatted_df)[0]
     print(f"\n🎯 Predicted lane score: {prediction:.2f}")
 
