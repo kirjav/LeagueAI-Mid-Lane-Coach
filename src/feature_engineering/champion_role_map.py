@@ -8,6 +8,7 @@ champion_role_map = {
     'Syndra': 'control_mage',
     'Vex': 'control_mage',
     'Anivia': 'control_mage',
+    'AurelionSol': 'control_mage',
     
     # Burst Mages
     'LeBlanc': 'burst_mage',

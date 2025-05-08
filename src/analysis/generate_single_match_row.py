@@ -1,45 +1,25 @@
-import os
-import json
-import csv
 import sys
+import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import pandas as pd
+from dotenv import load_dotenv
+from sklearn.preprocessing import OneHotEncoder
+import joblib
 
-from utils.riot_helpers import normalize_summoner
+from feature_engineering.champion_role_map import champion_role_map
+from utils.riot_helpers import get_match_data, get_timeline_data, extract_participants
 from utils.feature_extract_helper import is_boots, calculate_kda
 
 
-def extract_features(timeline_json, match_id, summoner, participant_id, opp_participant_id=None):
+load_dotenv()
+API_KEY = os.getenv("RIOT_API_KEY")
+HEADERS = {"X-Riot-Token": API_KEY}
+ROUTING = 'americas'
+
+def extract_features(features, timeline_json, match_id, summoner, participant_id, opp_participant_id=None):
     info = timeline_json['info']
     frames = info['frames']
     events = [e for frame in frames for e in frame['events']]
-
-    features = {
-        'summoner': normalize_summoner(summoner),
-        'match_id': match_id,
-        'champion': None,
-        'cs_at_10min': None,
-        'opp_cs_at_10min': None,
-        'first_ward_time': None,
-        'first_death_time': None,
-        'first_kill_or_assist_time': None,
-        'first_item_after_4min_id': None,
-        'first_item_after_4min_time': None,
-        'boots_purchase_time': None,
-        'first_teamfight_join_time': None,
-        'fight_impact_score': 0,
-        'avg_cs_per_min': None,
-        'game_length_minutes': None,
-        'kda': None,
-        'opp_kda': None,
-        'cs_diff_at_10': None,
-        'gold_diff_at_5': None,
-        'gold_diff_at_10': None,
-        'gold_diff_at_15': None,
-        'gold_diff_trend_5_to_10': None,
-        'gold_diff_trend_10_to_15': None,
-        'early_roam': False,
-        'has_early_lane_prio': False
-    }
 
     if not frames:
         return None
@@ -160,44 +140,82 @@ def extract_features(timeline_json, match_id, summoner, participant_id, opp_part
 
     return features
 
+def main(match_number, server, summoner):
+    
+    match_id = f"{server.upper()}_{match_number}"
+    #summoner = normalize_summoner(summoner)
+    match_data = get_match_data(match_id)
+    timeline_data = get_timeline_data(match_id)
 
+    if not match_data or not timeline_data:
+        print("❌ Failed to fetch data from Riot API.")
+        return
 
-def main():
-    input_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'timelines')
-    match_info_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'midlane_matches.csv')
-    output_file = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'parsed_timeline_features.csv')
+    info = match_data['info']
+    timeline = timeline_data['info']
+    this_player, opponent = extract_participants(info, summoner)
+    if not this_player:
+        print("❌ Summoner not found in match.")
+        return
 
-    with open(match_info_path, newline='', encoding='utf-8') as f:
-        match_info_list = list(csv.DictReader(f))
+    base_fields = {
+        'summoner': summoner,
+        'match_id': match_id,
+        'champion': this_player['championName'],
+        'participant_id': this_player['participantId'],
+        'opp_participant_id': opponent['participantId'] if opponent else None,
+        'win': this_player['win'],
+        'kills': this_player['kills'],
+        'deaths': this_player['deaths'],
+        'assists': this_player['assists'],
+        'cs': this_player['totalMinionsKilled'] + this_player['neutralMinionsKilled'],
+        'duration': info['gameDuration'],
+        'opp_kills': opponent['kills'] if opponent else 0,
+        'opp_deaths': opponent['deaths'] if opponent else 1,
+        'opp_assists': opponent['assists'] if opponent else 0,
+        'opp_cs': opponent['totalMinionsKilled'] + opponent['neutralMinionsKilled'] if opponent else 0,
+        'opp_champion': opponent['championName'] if opponent else '',
+        'opp_summoner': f"{opponent['riotIdGameName']}#{opponent['riotIdTagline']}" if opponent else '',
+        'cs_at_10min': None,
+        'opp_cs_at_10min': None,
+        'first_ward_time': None,
+        'first_death_time': None,
+        'first_kill_or_assist_time': None,
+        'first_item_after_4min_id': None,
+        'first_item_after_4min_time': None,
+        'boots_purchase_time': None,
+        'first_teamfight_join_time': None,
+        'fight_impact_score': 0,
+        'avg_cs_per_min': None,
+        'game_length_minutes': None,
+        'kda': None,
+        'opp_kda': None,
+        'cs_diff_at_10': None,
+        'gold_diff_at_5': None,
+        'gold_diff_at_10': None,
+        'gold_diff_at_15': None,
+        'gold_diff_trend_5_to_10': None,
+        'gold_diff_trend_10_to_15': None,
+        'early_roam': False,
+        'has_early_lane_prio': False,
+    }
+    # (features, timeline_json, match_id, summoner, participant_id, opp_participant_id=None):
+    features = extract_features(base_fields, timeline_data, match_id, summoner, this_player['participantId'], opponent['participantId'])
 
-    results = []
+    # Combine and encode
+    full_row = features
+    df = pd.DataFrame([full_row])
+    df['champion_role'] = df['champion'].map(champion_role_map)
 
-    for match_info in match_info_list:
-        summoner = match_info['summoner']
-        match_id = match_info['match_id']
-        participant_id = int(match_info.get('participant_id', -1))
-        opp_participant_id = int(match_info.get('opp_participant_id', -1)) if match_info.get('opp_participant_id') else None
+    encoder = joblib.load(os.path.join("models", "champion_role_encoder.pkl"))
+    role_encoded = encoder.transform(df[['champion_role']])
+    encoded_df = pd.DataFrame(role_encoded, columns=encoder.get_feature_names_out(['champion_role']))
 
-        filename = f"{summoner.replace(' ', '_').replace('#', '-') }__{match_id}_timeline.json"
-        filepath = os.path.join(input_dir, filename)
-        if not os.path.exists(filepath):
-            print(f"❌ Missing timeline file for match: {filename}")
-            continue
-
-        with open(filepath, newline='', encoding='utf-8') as f:
-            timeline = json.load(f)
-
-        features = extract_features(timeline, match_id, summoner, participant_id, opp_participant_id)
-        if features:
-            results.append(features)
-
-    fieldnames = results[0].keys() if results else []
-    with open(output_file, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(results)
-
-    print(f"\n✅ Parsed {len(results)} timelines → saved to {output_file}")
+    final_df = pd.concat([df.drop(columns=['champion_role']).reset_index(drop=True), encoded_df], axis=1)
+    
+    output_path = os.path.join(os.path.dirname(__file__), '..','..', 'data', 'single_match_row.csv')
+    final_df.to_csv(output_path, index=False)
+    print(f"✅ Saved single match row to {output_path}")
 
 if __name__ == '__main__':
-    main()
+    main("5282357783", "NA1", "Wallaby#Rito")
