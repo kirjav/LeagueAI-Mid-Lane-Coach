@@ -1,0 +1,12 @@
+{
+  "first_teamfight_join_time": "numeric",
+  "has_early_lane_prio": "numeric",
+  "first_ward_time": "numeric",
+  "boots_purchase_time": "numeric",
+  "cs_diff_at_10": "numeric",
+  "fight_impact_score": "numeric",
+  "first_item_after_4min_time": "numeric",
+  "gold_diff_trend_5_to_10": "numeric",
+  "gold_diff_trend_10_to_15": "numeric",
+  "avg_cs_per_min": "numeric"
+}
