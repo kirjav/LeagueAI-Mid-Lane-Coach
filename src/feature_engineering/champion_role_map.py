@@ -9,6 +9,7 @@ champion_role_map = {
     'Vex': 'control_mage',
     'Anivia': 'control_mage',
     'AurelionSol': 'control_mage',
+    'Hwei': 'control_mage',
     
     # Burst Mages
     'LeBlanc': 'burst_mage',

@@ -17,4 +17,4 @@ def full_analysis_pipeline(game_id: str, server: str, summoner: str):
 
 if __name__ == "__main__":
     # Example input
-    full_analysis_pipeline("5282357783", "NA1", "Wallaby#Rito")
+    full_analysis_pipeline("5282972169", "NA1", "Wallaby#Rito")

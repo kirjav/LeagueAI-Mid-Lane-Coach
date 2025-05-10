@@ -37,13 +37,13 @@ def extract_features(features, timeline_json, match_id, summoner, participant_id
 
         if pf:
             cs = pf.get('minionsKilled', 0) + pf.get('jungleMinionsKilled', 0)
-            if frame['timestamp'] >= 600000 and not features['cs_at_10min']:
+            if frame['timestamp'] <= 600000:
                 features['cs_at_10min'] = cs
             if frame == frames[-1]:
                 final_cs = cs
 
         if opp_pf:
-            if frame['timestamp'] >= 600000 and not features['opp_cs_at_10min']:
+            if frame['timestamp'] <= 600000:
                 features['opp_cs_at_10min'] = opp_pf.get('minionsKilled', 0) + opp_pf.get('jungleMinionsKilled', 0)
 
     if game_duration > 0:
@@ -217,5 +217,5 @@ def main(match_number, server, summoner):
     final_df.to_csv(output_path, index=False)
     print(f"✅ Saved single match row to {output_path}")
 
-if __name__ == '__main__':
-    main("5282357783", "NA1", "Wallaby#Rito")
+#if __name__ == '__main__':
+    #main("5282357783", "NA1", "Wallaby#Rito")
