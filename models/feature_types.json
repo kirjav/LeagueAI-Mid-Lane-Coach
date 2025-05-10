@@ -1,6 +1,6 @@
 {
   "first_teamfight_join_time": "numeric",
-  "has_early_lane_prio": "numeric",
+  "has_early_lane_prio": "boolean",
   "first_ward_time": "numeric",
   "boots_purchase_time": "numeric",
   "cs_diff_at_10": "numeric",

@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 import joblib
@@ -12,7 +12,7 @@ def train_stat_quality_model(
     label_column='lane_score',
     quality_threshold=60,
     test_size=0.2,
-    model_cls=LogisticRegression
+    model_cls=RandomForestClassifier  # ✅ Use RandomForest by default
 ):
     """
     Trains a classifier that determines if a given stat is "good" or "bad" for lane performance.
@@ -24,7 +24,7 @@ def train_stat_quality_model(
     - label_column (str): Column used to determine good vs. bad performance (default: 'lane_score').
     - quality_threshold (int): Threshold on lane_score to classify stat as good (1) or bad (0).
     - test_size (float): Fraction of data to use for testing.
-    - model_cls (sklearn model): Classifier class to use (default: LogisticRegression).
+    - model_cls (sklearn model): Classifier class to use (default: RandomForestClassifier).
     """
     df = pd.read_csv(data_path)
 
@@ -37,13 +37,13 @@ def train_stat_quality_model(
     X = df[[feature_name]]
     y = df['is_good']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
 
     model = model_cls()
     model.fit(X_train, y_train)
 
     print(f"\n📊 Evaluation for '{feature_name}'")
-    print(classification_report(y_test, model.predict(X_test)))
+    print(classification_report(y_test, model.predict(X_test), zero_division=0))  # ✅ Fix undefined precision
 
     joblib.dump(model, output_model_path)
     print(f"✅ Model saved to: {output_model_path}")

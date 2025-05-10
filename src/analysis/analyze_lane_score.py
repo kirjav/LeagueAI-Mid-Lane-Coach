@@ -8,6 +8,15 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from feature_engineering.lane_features import FEATURES_TO_TRAIN
 from utils.feature_feedback import suggest_target_value
 
+   
+def clampBoolean(n): 
+    if n < 0: 
+        return 0
+    elif n > 1: 
+        return 1
+    else: 
+        return n 
+    
 def categorize_feature(feature):
     if feature in ['first_ward_time', 'first_item_after_4min_time', 'boots_purchase_time']:
         return "📍 Early Game"
@@ -62,30 +71,45 @@ def give_feature_feedback(row, feature_models, feature_types):
         prediction = model.predict(formatted_input)[0]
         ftype = feature_types.get(feature, "numeric")
         category = categorize_feature(feature)
-
+        suggested = suggest_target_value(model, feature, value)
         if prediction >= 0.5:
             if ftype != "boolean":
                 categorized_feedback[category].append(
-                    f"✅ `{feature}` was strong ({value}). Keep it up!"
+                    f"✅ `{feature}` was strong ({value}). Keep it up! Ideal value: `{suggested}`"
                 )
             continue
 
         if ftype == "boolean":
-            if not value:
+            suggested = clampBoolean(suggested)
+            if bool(value) != bool(suggested):
                 categorized_feedback[category].append(
-                    f"❗ Consider taking action related to `{feature}` earlier or more often."
+                    f"❗ Consider taking action related to `{feature}` earlier or more often. Your value: `{bool(value)}`. Intended: `{bool(suggested)}`"
                 )
+            else:
+                categorized_feedback[category].append(
+                f"✅ `{feature}` was correctly handled (`{bool(value)}`). Keep doing that!"
+            )
+                
         else:
-            suggested = suggest_target_value(model, feature, value)
-            if suggested:
-                categorized_feedback[category].append(
-                    f"❗ Improve `{feature}` — try aiming for **{suggested:.1f}** (you had {value})."
-                )
+            if suggested is not None:
+                try:
+                    diff = abs(value - suggested)
+                    if suggested != 0 and (diff / abs(suggested)) <= 0.1:
+                        categorized_feedback[category].append(
+                            f"✅ `{feature}` was close to ideal — you had {value:.1f}, target is {suggested:.1f}. Nice!"
+                        )
+                    else:
+                        categorized_feedback[category].append(
+                            f"❗ Improve `{feature}` — try aiming for **{suggested:.1f}** (you had {value:.1f})."
+                        )
+                except Exception as e:
+                    categorized_feedback[category].append(
+                        f"❗ Consider optimizing `{feature}` — your value ({value}) underperformed."
+                    )
             else:
                 categorized_feedback[category].append(
                     f"❗ Consider optimizing `{feature}` — your value ({value}) underperformed."
                 )
-
     return categorized_feedback
 
 
@@ -114,7 +138,6 @@ def main():
     feature_models = load_feature_models()
     feature_types = load_feature_types()
 
-    print("\n📋 Feedback on specific features:")
     feedback_by_category = give_feature_feedback(df.iloc[0], feature_models, feature_types)
 
     print("\n📋 Detailed Feedback by Category:")
