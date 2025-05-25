@@ -32,7 +32,7 @@ def main():
 
     # Predict and print result
     lane_score = model.predict(df)[0]
-    print(f"🧠 Predicted Lane Score: {lane_score:.2f} (out of 100)")
+    #print(f"🧠 Predicted Lane Score: {lane_score:.2f} (out of 100)")
 
 if __name__ == '__main__':
     main()

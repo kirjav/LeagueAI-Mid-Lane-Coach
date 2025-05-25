@@ -112,6 +112,24 @@ def give_feature_feedback(row, feature_models, feature_types):
                 )
     return categorized_feedback
 
+def analyze_features_and_feedback():
+    base_dir = os.path.dirname(__file__)
+    model_path = os.path.join(base_dir, '..','..', 'models', 'lane_score_model.pkl')
+    data_path = os.path.join(base_dir, '..','..', 'data', 'single_match_row.csv')
+
+    df = pd.read_csv(data_path)
+    model, expected_features = load_model_and_features(model_path)
+    formatted_df = format_input_to_match_model(df.copy(), expected_features)
+    prediction = model.predict(formatted_df)[0]
+    #print(f"\n🎯 Predicted lane score: {prediction:.2f}")
+
+    feature_models = load_feature_models()
+    feature_types = load_feature_types()
+
+    feedback_by_category = give_feature_feedback(df.iloc[0], feature_models, feature_types)
+
+    return prediction, feedback_by_category
+
 
 def main():
     base_dir = os.path.dirname(__file__)
