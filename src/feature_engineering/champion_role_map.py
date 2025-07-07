@@ -58,4 +58,5 @@ champion_role_map = {
     'Yasuo': 'fighter',
     'Vladimir': 'battlemage',
     'Neeko': 'control_mage',
+    'Kassadin': "battlemage",
 }

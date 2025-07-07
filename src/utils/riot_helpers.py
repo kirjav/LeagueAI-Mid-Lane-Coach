@@ -23,17 +23,38 @@ def normalize_summoner(s):
 
 def extract_participants(info, riot_id):
     game_name, tag_line = riot_id.split("#")
+
+    # Step 1: Try to find the summoner
     this_player = next(
         (p for p in info['participants']
          if p.get('riotIdGameName', '').lower() == game_name.lower()
-         and p.get('riotIdTagline', '').lower() == tag_line.lower()
-         and p.get('lane') == 'MIDDLE'),
+         and p.get('riotIdTagline', '').lower() == tag_line.lower()),
         None
     )
-    opponent = next(
-        (p for p in info['participants']
-         if p.get('lane') == 'MIDDLE' and p.get('teamId') != this_player.get('teamId')),
-        None
-    ) if this_player else None
+
+    opponent = None
+
+    if this_player:
+        player_team = this_player.get('teamId')
+        player_lane = this_player.get('lane', None)
+
+        # Step 2: Try to find an opponent with same lane
+        if player_lane and player_lane != "NONE":
+            opponent = next(
+                (p for p in info['participants']
+                 if p.get('teamId') != player_team
+                 and p.get('lane') == player_lane),
+                None
+            )
+
+        # Step 3: Fallback — pick any enemy player if lane match fails
+        if not opponent:
+            opponent = next(
+                (p for p in info['participants']
+                 if p.get('teamId') != player_team),
+                None
+            )
 
     return this_player, opponent
+
+
