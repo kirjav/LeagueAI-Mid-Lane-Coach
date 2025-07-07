@@ -33,3 +33,10 @@ A League of Legends mid-lane analysis tool powered by match data and machine lea
 - Personalized improvement reports  
 - Web dashboard or Discord bot integration  
 - Expand features to include wave state, vision score, aggression index, etc.
+
+
+# Screenshots:
+![image](https://github.com/user-attachments/assets/c606550c-3207-44f0-8a88-67556af6e0d6)
+
+![image](https://github.com/user-attachments/assets/2ca64966-f022-4013-a6c4-b65407403e5a)
+
