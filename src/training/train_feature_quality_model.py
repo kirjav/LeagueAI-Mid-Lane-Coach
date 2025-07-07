@@ -33,6 +33,9 @@ def train_stat_quality_model(
 
     df = df[[feature_name, label_column]].dropna()
     df['is_good'] = (df[label_column] >= quality_threshold).astype(int)
+    
+    print(f"\n📈 Class distribution for '{feature_name}':")
+    print(df['is_good'].value_counts())
 
     X = df[[feature_name]]
     y = df['is_good']

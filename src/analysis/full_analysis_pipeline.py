@@ -22,7 +22,7 @@ def full_analysis_pipeline(game_id: str, server: str, summoner: str):
         "feedback": feedback
     }
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
     # Example input and output
     # result = full_analysis_pipeline("5282972169", "NA1", "Wallaby#Rito")
     # print(result)

@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import json
 import sys
+import streamlit as st
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from feature_engineering.lane_features import FEATURES_TO_TRAIN
 from utils.feature_feedback import suggest_target_value
@@ -16,6 +17,28 @@ def clampBoolean(n):
         return 1
     else: 
         return n 
+    
+def is_value_reasonable_for_model(model, feature, value, suggested, full_row=None):
+    try:
+        test_df = pd.DataFrame([full_row])  # use full row
+        test_df = format_input_to_match_model(test_df, model.feature_names_in_)
+
+        test_df_value = test_df.copy()
+        test_df_value[feature] = value
+        pred_value = model.predict(test_df_value)[0]
+
+        test_df_suggested = test_df.copy()
+        test_df_suggested[feature] = suggested
+        pred_ideal = model.predict(test_df_suggested)[0]
+
+        st.sidebar.write(f"[DEBUG] {feature} → value={value}, suggested={suggested}, pred_value={pred_value:.2f}, pred_ideal={pred_ideal:.2f}")
+
+        if pred_ideal >= 0.5 and pred_value < 0.5:
+            return False
+        return True
+    except Exception as e:
+        st.sidebar.write(f"[ERROR] {feature}: {e}")
+        return None
     
 def categorize_feature(feature):
     if feature in ['first_ward_time', 'first_item_after_4min_time', 'boots_purchase_time']:
@@ -68,16 +91,24 @@ def give_feature_feedback(row, feature_models, feature_types):
         formatted_input = pd.DataFrame([{feature: value}])
         formatted_input = format_input_to_match_model(formatted_input, model.feature_names_in_)
 
-        prediction = model.predict(formatted_input)[0]
+        probability = model.predict_proba(formatted_input)[0][1]  # Probability of class 1 (good)
+
         ftype = feature_types.get(feature, "numeric")
         category = categorize_feature(feature)
         suggested = suggest_target_value(model, feature, value)
-        if prediction >= 0.5:
+        if probability >= 0.7:  # use a more confident threshold
             if ftype != "boolean":
-                categorized_feedback[category].append(
-                    f"✅ `{feature}` was strong ({value}). Keep it up! Ideal value: `{suggested}`"
-                )
+                diff = abs(value - suggested)
+                if suggested != 0 and (diff / abs(suggested)) <= 0.1:
+                    categorized_feedback[category].append(
+                        f"✅ `{feature}` was strong ({value:.1f}). Keep it up! Ideal value: `{suggested:.1f}`"
+                    )
+                else:
+                    categorized_feedback[category].append(
+                        f"⚠️ `{feature}` helped overall, but `{value:.1f}` could be closer to ideal `{suggested:.1f}`."
+                    )
             continue
+
 
         if ftype == "boolean":
             suggested = clampBoolean(suggested)
